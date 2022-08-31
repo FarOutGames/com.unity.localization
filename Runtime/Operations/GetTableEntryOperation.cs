@@ -51,6 +51,20 @@ namespace UnityEngine.Localization
             if (m_SelectedLocale == null)
             {
                 m_SelectedLocale = LocalizationSettings.SelectedLocaleAsync.Result;
+
+#if UNITY_EDITOR
+                // Fallback to the project locale if, in edit mode, no locale is selected and no override is specified. This
+                // ensures that we can always get localized strings/assets even in edit mode, without having to change the
+                // selected locale all the time.
+                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    if (m_SelectedLocale == null)
+                    {
+                        m_SelectedLocale = LocalizationSettings.ProjectLocale;
+                    }
+                }
+#endif
+
                 if (m_SelectedLocale == null)
                 {
                     CompleteAndRelease(default, false, "SelectedLocale is null. Could not get table entry.");
@@ -181,7 +195,7 @@ namespace UnityEngine.Localization
                 }
             }
 
-            if (m_FallbackQueue.Count == 0) 
+            if (m_FallbackQueue.Count == 0)
                 return null;
 
             // Return the next fallback

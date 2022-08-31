@@ -233,6 +233,19 @@ namespace UnityEngine.Localization.Settings
         /// <returns></returns>
         public virtual AsyncOperationHandle<TTable> GetTableAsync(TableReference tableReference, Locale locale = null)
         {
+#if UNITY_EDITOR
+            // Fallback to the project locale if, in edit mode, no locale is selected and no override is specified. This
+            // ensures that we can always get localized strings/assets even in edit mode, without having to change the
+            // selected locale all the time.
+            if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                if (locale == null && LocalizationSettings.SelectedLocale == null)
+                {
+                    locale = LocalizationSettings.ProjectLocale;
+                }
+            }
+#endif
+
             // Extract the Locale Id or use a placeholder if we are using the selected locale and it is not ready yet.
             bool localeAvailable = locale != null || LocalizationSettings.SelectedLocaleAsync.IsDone;
             bool useSelectedLocalePlaceholder = true;
